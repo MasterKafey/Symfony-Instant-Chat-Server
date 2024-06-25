@@ -9,7 +9,7 @@ use App\WampServer\WampTopic;
 use React\EventLoop\Loop;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Thruway\ClientSession;
 use Thruway\Transport\PawlTransportProvider;
 use function React\Promise\all;
@@ -28,19 +28,16 @@ class Publisher
 
     protected WampTopic $wampTopic;
     protected ServiceClientAuthenticator $serviceClientAuthenticator;
-    protected NormalizerInterface $normalizer;
 
     public function __construct(
         string $wampURL,
         WampTopic $wampTopic,
         ServiceClientAuthenticator $serviceClientAuthenticator,
-        NormalizerInterface $normalizer
     )
     {
         $this->wampURL = $wampURL;
         $this->wampTopic = $wampTopic;
         $this->serviceClientAuthenticator = $serviceClientAuthenticator;
-        $this->normalizer = $normalizer;
     }
 
     public function publish($realms, string $topic, array $payload = [], array $parameters = [], array $options = []): PromiseInterface
@@ -48,7 +45,7 @@ class Publisher
         $topic = $this->wampTopic->getTopic($topic, $parameters);
 
         if (count($payload)) {
-            $payload = $this->normalizer->normalize($payload);
+            $payload = (new ObjectNormalizer())->normalize($payload);
         }
 
         if (!is_array($realms)) {

@@ -12,10 +12,12 @@ class WampRouter extends Router
 {
     public const REALM_USER = 'user';
 
-    public function __construct(RouterTransportProvider $routerTransportProvider)
+    public function __construct(
+        private readonly string $wampURL,
+    )
     {
         parent::__construct(Loop::get());
-        $this->addTransportProvider($routerTransportProvider);
+        $this->addTransportProvider(new RouterTransportProvider($this->wampURL));
         $authenticationManager = new AuthenticationManager();
         $authorizationManager = new AuthorizationManager(WampRouter::REALM_USER, Loop::get());
         $authorizationManager->addAuthorizationRule([
